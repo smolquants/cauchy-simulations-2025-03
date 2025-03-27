@@ -1,1 +1,4 @@
 name: cauchy-simulations-2025-03
+
+plugins:
+  - name: notebook

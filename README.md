@@ -2,7 +2,7 @@
 
 Economic simulations for Cauchy.
 
-## Installation
+## Install
 
 Clone the repo
 
@@ -15,4 +15,10 @@ Install dependencies with [uv](https://github.com/astral-sh/uv) and [`ape`](http
 ```sh
 uv build
 uv run ape plugins install .
+```
+
+## Run
+
+```sh
+uv run ape notebook
 ```
