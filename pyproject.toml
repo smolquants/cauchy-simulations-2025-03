@@ -1,5 +1,5 @@
 [project]
-name = "cauchy-simulations-2025-03"
+name = "cauchy-simulations"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

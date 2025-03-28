@@ -15,10 +15,20 @@ Install dependencies with [uv](https://github.com/astral-sh/uv) and [`ape`](http
 ```sh
 uv build
 uv run ape plugins install .
+uv pip install --find-links dist cauchy-simulations
 ```
 
 ## Run
 
+cli
+
 ```sh
-uv run ape notebook
+uv run python
+>>> import cauchy_simulations
+```
+
+jupyter
+
+```sh
+uv run --with jupyter jupyter lab
 ```
