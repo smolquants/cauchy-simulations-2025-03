@@ -6,9 +6,6 @@ from scipy import integrate
 class LiquidityProfile(BaseModel):
     """
     Generic model for concentrated liquidity global liquidity density function.
-    
-    Should require int_{-\infty}^{\infty} l(t)dt = C, where C is a global constant
-    when no LPs add or remove funds from pool.
 
     Assumes continuous liquidity profile and input ticks are in "natural log" form
     such that price p = e ** (t), where t is the tick.

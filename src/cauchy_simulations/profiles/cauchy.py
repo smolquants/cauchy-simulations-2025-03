@@ -2,6 +2,7 @@ import numpy as np
 from scipy import stats
 from .base import LiquidityProfile
 
+
 class CauchyLiquidityProfile(LiquidityProfile):
     """
     Cauchy distribution liquidity profile, with shape described by one scale parameter: gamma.
