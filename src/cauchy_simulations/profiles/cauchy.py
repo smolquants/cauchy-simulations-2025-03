@@ -1,3 +1,4 @@
+import numpy as np
 from scipy import stats
 from .base import LiquidityProfile
 
@@ -25,3 +26,20 @@ class ModifiedCauchyLiquidityProfile(CauchyLiquidityProfile):
 
     def at(self, t: int) -> float:
         return super().at(t) + super().at(self.peg)
+
+
+class VariableCauchyLiquidityProfile(CauchyLiquidityProfile):
+    """
+    Variable Cauchy distribution liquidity profile, with shape described by
+    one scale parameter: gamma, that varies with tick.
+
+    gamma(t) = gamma * sqrt(1 + (t/gamma)^2)
+
+    such that for tick near 0 acts as a constant, and tick -> +/- inf acts
+    proportional to t so (t/gamma) -> constant.
+
+    Usual normalization constant ignored.
+    """
+    def at(self, t: int) -> float:
+        t_scaled = t / self.gamma
+        return self.c * (1 / (1 + (t_scaled / np.sqrt(1 + t_scaled**2))**2))
