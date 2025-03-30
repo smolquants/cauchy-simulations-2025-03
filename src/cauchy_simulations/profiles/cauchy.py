@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+from pydantic import PydanticUserError
 from .base import LiquidityProfile
 
 
@@ -32,15 +33,31 @@ class ModifiedCauchyLiquidityProfile(CauchyLiquidityProfile):
 class VariableCauchyLiquidityProfile(CauchyLiquidityProfile):
     """
     Variable Cauchy distribution liquidity profile, with shape described by
-    one scale parameter: gamma, that varies with tick.
+    a scale parameter: gamma, that can vary with tick.
+    """
+    def _gamma(self, t: int) -> float:
+        """
+        Gamma as a function of tick.
+        """
+        raise PydanticUserError("Function not implemented.", code=None)
 
-    gamma(t) = gamma * sqrt(1 + (t/gamma)^2)
+    def at(self, t: int) -> float:
+        return self.c * stats.cauchy.pdf(t, 0, self._gamma(t))
+    
+
+class SquaredVariableCauchyLiquidityProfile(VariableCauchyLiquidityProfile):
+    """
+    Variable Cauchy distribution liquidity profile, with shape described by
+    a scale parameter: gamma, that varies with tick and
+    acceleration parameter: a, that describes the speed of transition
+    of gamma from constant to proportional to t^2.
+
+    gamma(t) = gamma * (1 + (t/(a * gamma))^2)
 
     such that for tick near 0 acts as a constant, and tick -> +/- inf acts
-    proportional to t so (t/gamma) -> constant.
-
-    Usual normalization constant ignored.
+    proportional to t^2 so liquidity density profile -> constant.
     """
-    def at(self, t: int) -> float:
-        t_scaled = t / self.gamma
-        return self.c * (1 / (1 + (t_scaled / np.sqrt(1 + t_scaled**2))**2))
+    a: float
+
+    def _gamma(self, t: int) -> float:
+        return self.gamma * (1 + (t/(self.a * self.gamma))**2)
