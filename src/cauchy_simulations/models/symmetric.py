@@ -37,7 +37,7 @@ class SymmetricModel(BaseModel):
         List of segments to add/remove liquidity from.
         """
         _n = self.n()
-        return list(self.s * np.array([(2**(_n - i), 2**(_n - i - 1)) for i in range(_n)] + [(1, 0)]))
+        return self.s * np.array([(2**(_n - i), 2**(_n - i - 1)) for i in range(_n)] + [(1, 0)])
 
     def ticks(self) -> list[list[float]]:
         """
@@ -46,7 +46,7 @@ class SymmetricModel(BaseModel):
         """
         _segments = self.segments()
         _r = self.r
-        return list(np.array([np.arange(start=i, stop=f, step=(f - i) / 2**_r) for i, f in _segments]).flatten())
+        return np.array([np.arange(start=i, stop=f, step=(f - i) / 2**_r) for i, f in _segments]).flatten()
 
     def at(self, t: float, lp: LiquidityProfile) -> float:
         """
@@ -54,20 +54,20 @@ class SymmetricModel(BaseModel):
         
         Chooses continuous liquidity value at the widest tick of the bin that contains t.
         """
-        if lp.at(t) != lp.at(-t):
+        if not np.equal(lp.at(t), lp.at(-t)):
             raise ValueError(f"Liquidity profile is not symmetric at {t}.")
 
         # ticks are sorted in descending order
         _ticks = self.ticks()
         # should be between 0 and s or > t_max if not in loop otherwise raise error
-        if _ticks[-1] >= np.abs(t) >= 0:
+        if np.any((_ticks[-1] >= np.abs(t)) & (np.abs(t) >= 0)):
             return lp.at(_ticks[-1])
         elif np.abs(t) > _ticks[0]:
             return lp.at(_ticks[0])
 
         for i in range(len(_ticks) - 1):
             # leftmost is largest in bin
-            if _ticks[i] >= np.abs(t) > _ticks[i+1]:
+            if np.any((_ticks[i] >= np.abs(t)) & (np.abs(t) > _ticks[i+1])):
                 return lp.at(_ticks[i])
 
         raise ValueError(f"Tick {t} is not in any bin.")
