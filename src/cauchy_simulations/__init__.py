@@ -6,6 +6,8 @@ from .profiles.cauchy import (
     SquaredVariableCauchyLiquidityProfile
 )
 from .profiles.normal import NormalLiquidityProfile
+from .models.symmetric import SymmetricModel
+
 from .utils import from_bps_tick, to_bps_tick
 
 __all__ = [
@@ -15,6 +17,7 @@ __all__ = [
     "ModifiedCauchyLiquidityProfile",
     "VariableCauchyLiquidityProfile",
     "SquaredVariableCauchyLiquidityProfile",
+    "SymmetricModel",
     "from_bps_tick",
     "to_bps_tick"
 ]
