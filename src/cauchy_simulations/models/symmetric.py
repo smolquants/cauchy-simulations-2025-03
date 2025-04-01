@@ -1,12 +1,11 @@
 import numpy as np
-from pydantic import BaseModel
-from ..profiles.base import LiquidityProfile
+from .base import DiscretizedModel
 
 
-class SymmetricModel(BaseModel):
+class SymmetricDiscretizedModel(DiscretizedModel):
     """
-    Symmetric model for deploying concentrated liquidity
-    according to a symmetric discretized liquidity profile.
+    Model for deploying concentrated liquidity according to a
+    symmetric discretized liquidity profile.
 
     Adds/remove liquidity by working down the full tick range. Partitions the
     full tick range into N segments each of width 2 * s such that the ith
@@ -21,7 +20,6 @@ class SymmetricModel(BaseModel):
 
     Number of SSTORE calls then grows by log(1/s).
     """
-    t_max: float
     s: float
     r: int
 
@@ -37,7 +35,7 @@ class SymmetricModel(BaseModel):
         List of segments to add/remove liquidity from.
         """
         _n = self.n()
-        return self.s * np.array([(2**(_n - i), 2**(_n - i - 1)) for i in range(_n)] + [(1, 0)])
+        return list(self.s * np.array([(2**(_n - i), 2**(_n - i - 1)) for i in range(_n)] + [(1, 0)]))
 
     def ticks(self) -> list[list[float]]:
         """
@@ -46,28 +44,28 @@ class SymmetricModel(BaseModel):
         """
         _segments = self.segments()
         _r = self.r
-        return np.array([np.arange(start=i, stop=f, step=(f - i) / 2**_r) for i, f in _segments]).flatten()
+        return list(np.array([np.arange(start=i, stop=f, step=(f - i) / 2**_r) for i, f in _segments]).flatten())
 
-    def at(self, t: float, lp: LiquidityProfile) -> float:
+    def at(self, t: float) -> float:
         """
         Discretized concentrated liquidity value at tick t.
         
         Chooses continuous liquidity value at the widest tick of the bin that contains t.
         """
-        if not np.equal(lp.at(t), lp.at(-t)):
+        if not np.equal(self.lp.at(t), self.lp.at(-t)):
             raise ValueError(f"Liquidity profile is not symmetric at {t}.")
 
         # ticks are sorted in descending order
         _ticks = self.ticks()
         # should be between 0 and s or > t_max if not in loop otherwise raise error
-        if np.any((_ticks[-1] >= np.abs(t)) & (np.abs(t) >= 0)):
-            return lp.at(_ticks[-1])
+        if _ticks[-1] >= np.abs(t) >= 0:
+            return self.lp.at(_ticks[-1])
         elif np.abs(t) > _ticks[0]:
-            return lp.at(_ticks[0])
+            return self.lp.at(_ticks[0])
 
         for i in range(len(_ticks) - 1):
             # leftmost is largest in bin
-            if np.any((_ticks[i] >= np.abs(t)) & (np.abs(t) > _ticks[i+1])):
-                return lp.at(_ticks[i])
+            if _ticks[i] >= np.abs(t) > _ticks[i+1]:
+                return self.lp.at(_ticks[i])
 
         raise ValueError(f"Tick {t} is not in any bin.")
