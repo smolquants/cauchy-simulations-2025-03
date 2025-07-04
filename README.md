@@ -1,6 +1,6 @@
 # cauchy-simulations-2025-03
 
-Economic simulations for Cauchy.
+Economic simulations of Cauchy liquidity profile for [Spline](https://github.com/SplineFinance/abis).
 
 ## Install
 
